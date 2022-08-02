@@ -127,9 +127,8 @@ const KabanBoard = () => {
     <div>
       {list && (
         <Board
-          style={{ backgroundColor: "white", justifyContent: "center" }} // Style
+          style={{ backgroundColor: "transparent", textAlign: "left" }}
           data={{ lanes: list }}
-          draggable
           handleDragEnd={handleDragEnd}
           onCardMoveAcrossLanes={onCardMoveAcrossLanes}
           onCardUpdate={onCardUpdate}
@@ -137,7 +136,7 @@ const KabanBoard = () => {
           onCardDelete={onCardDelete}
           laneDraggable={false}
           editable
-          labelStyle={{ display: "none" }}
+          draggable
           components={{ NewCardForm, Card }}
         />
       )}
@@ -145,7 +144,8 @@ const KabanBoard = () => {
   );
 };
 
-const Card = ({ onChange, id, title, description, onDelete }) => {
+const Card = ({ onChange, id, title, description, onDelete, ...props }) => {
+  console.log('%c %c%cprops', 'color:#fff;background:#ee6f57;padding:3px;border-radius:2px', 'color:#fff;background:#1f3c88;padding:3px;border-radius:2px', 'color:#fff;background:rgb(3, 101, 100);padding:3px;border-radius:2px', props)
   const [value, setValue] = React.useState(title);
   const [editing, setEditing] = React.useState(false);
   const [deleteVisible, setDeleteVisible] = React.useState(false);
@@ -204,10 +204,10 @@ const Card = ({ onChange, id, title, description, onDelete }) => {
           className="position-absolute d-flex justify-content-center align-items-center"
           style={{
             top: 5,
-            right: 10,
+            right: 8,
             padding: 4,
-            height: 16,
-            width: 16,
+            height: 10,
+            width: 10,
             borderRadius: "50%",
             background: "#fef3f2",
             cursor: "pointer",
@@ -216,7 +216,7 @@ const Card = ({ onChange, id, title, description, onDelete }) => {
         >
           <i
             className="fa fa-trash"
-            style={{ fontSize: 10, color: "#f04438" }}
+            style={{ fontSize: 8, color: "#f04438" }}
           />
         </span>
       )}
