@@ -1,6 +1,7 @@
 import axios from "axios";
 import React from "react";
 import Board from "react-trello";
+import { Card, FormCard, ColHeader } from "./components";
 
 const API = process.env.REACT_APP_API;
 const BOARD_ID = process.env.REACT_APP_BOARD_ID;
@@ -9,6 +10,12 @@ const API_TOKEN = process.env.REACT_APP_API_TOKEN;
 
 const KabanBoard = () => {
   const [list, setList] = React.useState([]);
+ 
+  const [eventBus, setEventBus] = React.useState<any>(undefined);
+
+  const onEventBus = (handle) => {
+    setEventBus(handle);
+  };
 
   React.useEffect(() => {
     const getList = async () => {
@@ -61,6 +68,21 @@ const KabanBoard = () => {
   };
 
   const addCard = async (laneId: string, cardInfo: any) => {
+    console.log(
+      "%c %c%claneId",
+      "color:#fff;background:#ee6f57;padding:3px;border-radius:2px",
+      "color:#fff;background:#1f3c88;padding:3px;border-radius:2px",
+      "color:#fff;background:rgb(39, 72, 98);padding:3px;border-radius:2px",
+      laneId
+    );
+
+    console.log(
+      "%c %c%ccardInfo",
+      "color:#fff;background:#ee6f57;padding:3px;border-radius:2px",
+      "color:#fff;background:#1f3c88;padding:3px;border-radius:2px",
+      "color:#fff;background:rgb(131, 175, 155);padding:3px;border-radius:2px",
+      cardInfo
+    );
     try {
       const res = await axios.post(
         `${API}/cards?idList=${laneId}&key=${API_KEY}&token=${API_TOKEN}`,
@@ -71,7 +93,15 @@ const KabanBoard = () => {
         }
       );
 
-      return res.data;
+      eventBus.publish({
+        type: "ADD_CARD",
+        laneId,
+        card: {
+          id: res.data.id,
+          title: res.data.name,
+          description: res.data.desc,
+        },
+      });
     } catch (err) {
       console.error(err);
     }
@@ -97,10 +127,6 @@ const KabanBoard = () => {
     }
   };
 
-  const onCardAdd = (card, laneId) => {
-    addCard(laneId, card);
-  };
-
   const onCardUpdate = (_, data) => {
     updateCard(data.id, {
       name: data.title,
@@ -123,6 +149,10 @@ const KabanBoard = () => {
     onDeleteCard(cardId);
   };
 
+  const RenderColHeader = ({ onAddNewCard, ...props }) => {
+    return <ColHeader onAddNewCard={onAddNewCard} {...props} />;
+  };
+
   return (
     <div>
       {list && (
@@ -132,124 +162,19 @@ const KabanBoard = () => {
           handleDragEnd={handleDragEnd}
           onCardMoveAcrossLanes={onCardMoveAcrossLanes}
           onCardUpdate={onCardUpdate}
-          onCardAdd={onCardAdd}
           onCardDelete={onCardDelete}
           laneDraggable={false}
-          editable
-          draggable
-          components={{ NewCardForm, Card }}
+          components={{
+            NewCardForm: FormCard,
+            Card,
+            LaneHeader: (props) => (
+              <RenderColHeader {...props} onAddNewCard={addCard} />
+            ),
+          }}
+          eventBusHandle={onEventBus}
         />
       )}
     </div>
-  );
-};
-
-const Card = ({ onChange, id, title, description, onDelete, ...props }) => {
-  console.log('%c %c%cprops', 'color:#fff;background:#ee6f57;padding:3px;border-radius:2px', 'color:#fff;background:#1f3c88;padding:3px;border-radius:2px', 'color:#fff;background:rgb(3, 101, 100);padding:3px;border-radius:2px', props)
-  const [value, setValue] = React.useState(title);
-  const [editing, setEditing] = React.useState(false);
-  const [deleteVisible, setDeleteVisible] = React.useState(false);
-
-  const updateCard = (card) => {
-    onChange({ title: card, id });
-  };
-
-  const updateValue = () => {
-    setEditing(false);
-    if (title !== value) {
-      updateCard(value);
-    }
-  };
-
-  return (
-    <div
-      className="card p-2 mb-2 position-relative"
-      style={{ width: 260 }}
-      onMouseEnter={() => setDeleteVisible(true)}
-      onMouseLeave={() => setDeleteVisible(false)}
-    >
-      {editing ? (
-        <input
-          onBlur={() => updateValue()}
-          style={{ border: "none", width: "100%" }}
-          value={value}
-          onFocus={(e) => {
-            e.target.select();
-          }}
-          onChange={(e) => setValue(e.target.value)}
-          autoComplete="off"
-          autoCorrect="off"
-          autoCapitalize="off"
-          spellCheck="false"
-          autoFocus
-        />
-      ) : (
-        <>
-          <div className="text-wrap" onClick={() => setEditing(true)}>
-            {title}
-          </div>
-
-          {description && (
-            <>
-              <hr className="mt-1 text-secondary" />
-              <div className="text-wrap small text-secondary">
-                {description}
-              </div>
-            </>
-          )}
-        </>
-      )}
-      {deleteVisible && (
-        <span
-          className="position-absolute d-flex justify-content-center align-items-center"
-          style={{
-            top: 5,
-            right: 8,
-            padding: 4,
-            height: 10,
-            width: 10,
-            borderRadius: "50%",
-            background: "#fef3f2",
-            cursor: "pointer",
-          }}
-          onClick={() => onDelete()}
-        >
-          <i
-            className="fa fa-trash"
-            style={{ fontSize: 8, color: "#f04438" }}
-          />
-        </span>
-      )}
-    </div>
-  );
-};
-
-const NewCardForm = (props) => {
-  const [title, setTitle] = React.useState("");
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") {
-      props.onCancel();
-    }
-  };
-
-  return (
-    <form className="d-flex" onSubmit={() => props.onAdd({ title })}>
-      <input
-        onKeyDown={handleKeyDown}
-        className="form-control form-control-sm"
-        onChange={(e) => {
-          e.stopPropagation();
-          setTitle(e.target.value);
-        }}
-        placeholder="Add a card..."
-        value={title}
-        autoFocus
-      />
-      <button className="btn" type="submit">
-        Submit
-      </button>
-    </form>
   );
 };
 
