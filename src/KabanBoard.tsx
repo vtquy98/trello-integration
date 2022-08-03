@@ -31,12 +31,12 @@ const KabanBoard = () => {
           return {
             id: item.id,
             title: item.name,
-            style: { minWidth: 360, backgroundColor: "#eef2f6" },
+            style: { minWidth: 320, backgroundColor: "#eef2f6" },
             cards: item.cards.map((c) => ({
               id: c.id,
               title: c.name,
               cardStyle: {
-                width: 340,
+                width: 300,
               },
               description: c.desc,
             })),
@@ -72,7 +72,7 @@ const KabanBoard = () => {
             title: res.data.name,
             description: res.data.desc,
             cardStyle: {
-              width: 340,
+              width: 300,
             },
           },
         });
@@ -89,7 +89,7 @@ const KabanBoard = () => {
                     title: res.data.name,
                     description: res.data.desc,
                     cardStyle: {
-                      width: 340,
+                      width: 300,
                     },
                   };
                 }
@@ -128,7 +128,7 @@ const KabanBoard = () => {
           title: res.data.name,
           description: res.data.desc,
           cardStyle: {
-            width: 340,
+            width: 300,
           },
         },
       });
@@ -141,7 +141,7 @@ const KabanBoard = () => {
             title: res.data.name,
             description: res.data.desc,
             cardStyle: {
-              width: 340,
+              width: 300,
             },
           });
         }
