@@ -71,6 +71,9 @@ const KabanBoard = () => {
             id: res.data.id,
             title: res.data.name,
             description: res.data.desc,
+            cardStyle: {
+              width: 340,
+            },
           },
         });
 
@@ -124,6 +127,9 @@ const KabanBoard = () => {
           id: res.data.id,
           title: res.data.name,
           description: res.data.desc,
+          cardStyle: {
+            width: 340,
+          },
         },
       });
 
