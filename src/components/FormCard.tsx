@@ -20,7 +20,7 @@ const FormCard = ({ colId, defaultValue, onSubmit, onClose }) => {
       <div className="modal-header">
         <h5 className="modal-title">Update Card</h5>
         <button type="button" className="btn" onClick={() => onClose()}>
-          <span aria-hidden="true">&times;</span>
+          <i className="fa fa-times" style={{ fontSize: 12 }} />
         </button>
       </div>
 

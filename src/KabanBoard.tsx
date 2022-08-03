@@ -10,6 +10,10 @@ const BOARD_ID = process.env.REACT_APP_BOARD_ID;
 const API_KEY = process.env.REACT_APP_API_KEY;
 const API_TOKEN = process.env.REACT_APP_API_TOKEN;
 
+const LIST_STYLES = { minWidth: 320, backgroundColor: "#eef2f6" };
+const CARD_STYLE = {
+  width: 300,
+};
 const KabanBoard = () => {
   const [list, setList] = React.useState<Array<any>>([]);
   const [eventBus, setEventBus] = React.useState<any>(undefined);
@@ -22,22 +26,18 @@ const KabanBoard = () => {
   React.useEffect(() => {
     const getList = async () => {
       try {
-        const list = await fetch(
+        const list = await axios.get(
           `${API}/boards/${BOARD_ID}/lists?key=${API_KEY}&token=${API_TOKEN}&cards=all`
         );
-        const listData = await list.json();
-
-        const data = listData?.map((item) => {
+        const data = list.data?.map((item) => {
           return {
             id: item.id,
             title: item.name,
-            style: { minWidth: 320, backgroundColor: "#eef2f6" },
+            style: LIST_STYLES,
             cards: item.cards.map((c) => ({
               id: c.id,
               title: c.name,
-              cardStyle: {
-                width: 300,
-              },
+              cardStyle: CARD_STYLE,
               description: c.desc,
             })),
           };
@@ -71,9 +71,7 @@ const KabanBoard = () => {
             id: res.data.id,
             title: res.data.name,
             description: res.data.desc,
-            cardStyle: {
-              width: 300,
-            },
+            cardStyle: CARD_STYLE,
           },
         });
 
@@ -88,9 +86,7 @@ const KabanBoard = () => {
                     id: res.data.id,
                     title: res.data.name,
                     description: res.data.desc,
-                    cardStyle: {
-                      width: 300,
-                    },
+                    cardStyle: CARD_STYLE,
                   };
                 }
                 return c;
@@ -127,9 +123,7 @@ const KabanBoard = () => {
           id: res.data.id,
           title: res.data.name,
           description: res.data.desc,
-          cardStyle: {
-            width: 300,
-          },
+          cardStyle: CARD_STYLE,
         },
       });
 
@@ -140,9 +134,7 @@ const KabanBoard = () => {
             id: res.data.id,
             title: res.data.name,
             description: res.data.desc,
-            cardStyle: {
-              width: 300,
-            },
+            cardStyle: CARD_STYLE,
           });
         }
         return item;
@@ -200,11 +192,17 @@ const KabanBoard = () => {
     });
   };
 
-  const onDeleteCard = async (cardId: string) => {
+  const onDeleteCard = async (cardId: string, laneId: string) => {
     try {
       const res = await axios.delete(
         `${API}/cards/${cardId}?key=${API_KEY}&token=${API_TOKEN}`
       );
+
+      eventBus.publish({
+        type: "REMOVE_CARD",
+        laneId,
+        cardId,
+      });
 
       return res.data;
     } catch (err) {
@@ -213,7 +211,7 @@ const KabanBoard = () => {
   };
 
   const onCardDelete = (cardId, laneId) => {
-    onDeleteCard(cardId);
+    onDeleteCard(cardId, laneId);
   };
 
   const RenderColHeader = ({ onAddNewCard, ...props }) => {
@@ -252,7 +250,6 @@ const KabanBoard = () => {
             minWidth: "100vw",
           }}
           data={{ lanes: list }}
-          // handleDragEnd={handleDragEnd}
           onCardMoveAcrossLanes={onCardMoveAcrossLanes}
           onCardUpdate={onCardUpdate}
           onCardDelete={onCardDelete}
