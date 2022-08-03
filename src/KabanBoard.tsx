@@ -1,7 +1,9 @@
-import axios from "axios";
 import React from "react";
+import axios from "axios";
 import Board from "react-trello";
+
 import { Card, FormCard, ColHeader } from "./components";
+import { useModal } from "./components/Modal";
 
 const API = process.env.REACT_APP_API;
 const BOARD_ID = process.env.REACT_APP_BOARD_ID;
@@ -9,9 +11,9 @@ const API_KEY = process.env.REACT_APP_API_KEY;
 const API_TOKEN = process.env.REACT_APP_API_TOKEN;
 
 const KabanBoard = () => {
-  const [list, setList] = React.useState([]);
- 
+  const [list, setList] = React.useState<Array<any>>([]);
   const [eventBus, setEventBus] = React.useState<any>(undefined);
+  const { setModal, unSetModal } = useModal();
 
   const onEventBus = (handle) => {
     setEventBus(handle);
@@ -29,7 +31,6 @@ const KabanBoard = () => {
           return {
             id: item.id,
             title: item.name,
-            // label: '20/70',
             style: { width: 280 },
             cards: item.cards.map((c) => ({
               id: c.id,
@@ -61,6 +62,38 @@ const KabanBoard = () => {
         vars
       );
 
+      //trigger event to update data returned from trello
+      eventBus.publish({
+        type: "UPDATE_CARD",
+        laneId: res.data.idList,
+        card: {
+          id: res.data.id,
+          title: res.data.name,
+          description: res.data.desc,
+        },
+      });
+
+      //update data in the state
+      const newList = list.map((item) => {
+        if (item.id === res.data.idList) {
+          return {
+            ...item,
+            cards: item.cards.map((c) => {
+              if (c.id === res.data.id) {
+                return {
+                  id: res.data.id,
+                  title: res.data.name,
+                  description: res.data.desc,
+                };
+              }
+              return c;
+            }),
+          };
+        }
+        return item;
+      });
+      setList(newList);
+
       return res.data;
     } catch (err) {
       console.error(err);
@@ -68,31 +101,17 @@ const KabanBoard = () => {
   };
 
   const addCard = async (laneId: string, cardInfo: any) => {
-    console.log(
-      "%c %c%claneId",
-      "color:#fff;background:#ee6f57;padding:3px;border-radius:2px",
-      "color:#fff;background:#1f3c88;padding:3px;border-radius:2px",
-      "color:#fff;background:rgb(39, 72, 98);padding:3px;border-radius:2px",
-      laneId
-    );
-
-    console.log(
-      "%c %c%ccardInfo",
-      "color:#fff;background:#ee6f57;padding:3px;border-radius:2px",
-      "color:#fff;background:#1f3c88;padding:3px;border-radius:2px",
-      "color:#fff;background:rgb(131, 175, 155);padding:3px;border-radius:2px",
-      cardInfo
-    );
     try {
       const res = await axios.post(
         `${API}/cards?idList=${laneId}&key=${API_KEY}&token=${API_TOKEN}`,
         {
           name: cardInfo.title,
-          des: cardInfo.description,
+          desc: cardInfo.description,
           pos: "bottom",
         }
       );
 
+      //trigger event to update data with id returned from trello
       eventBus.publish({
         type: "ADD_CARD",
         laneId,
@@ -102,6 +121,19 @@ const KabanBoard = () => {
           description: res.data.desc,
         },
       });
+
+      //update data in the state
+      const newList = list.map((item: any) => {
+        if (item.id === laneId) {
+          item.cards.push({
+            id: res.data.id,
+            title: res.data.name,
+            description: res.data.desc,
+          });
+        }
+        return item;
+      });
+      setList(newList);
     } catch (err) {
       console.error(err);
     }
@@ -121,6 +153,22 @@ const KabanBoard = () => {
 
   const onCardMoveAcrossLanes = (fromLaneId, toLaneId, cardId, index) => {
     if (fromLaneId !== toLaneId) {
+      //update card in the state
+      const card = list
+        .find((item: any) => item.id === fromLaneId)
+        ?.cards.find((item: any) => item.id === cardId);
+
+      const newList = list.map((item: any) => {
+        if (item.id === fromLaneId) {
+          item.cards.splice(index, 1);
+        }
+        if (item.id === toLaneId) {
+          item.cards.push(card);
+        }
+        return item;
+      });
+      setList(newList);
+
       updateCard(cardId, {
         idList: toLaneId,
       });
@@ -153,6 +201,28 @@ const KabanBoard = () => {
     return <ColHeader onAddNewCard={onAddNewCard} {...props} />;
   };
 
+  const onCardClicked = (cardId, metadata, laneId) => {
+    const cards = list.find((item) => item.id === laneId);
+    const data = cards?.cards.find((item) => item.id === cardId);
+    setModal &&
+      setModal(
+        <FormCard
+          colId={laneId}
+          onClose={() => unSetModal && unSetModal()}
+          defaultValue={{
+            title: data.title,
+            description: data.description,
+          }}
+          onSubmit={(_, cardInfo) =>
+            updateCard(cardId, {
+              name: cardInfo.title,
+              desc: cardInfo.description,
+            })
+          }
+        />
+      );
+  };
+
   return (
     <div>
       {list && (
@@ -172,6 +242,7 @@ const KabanBoard = () => {
             ),
           }}
           eventBusHandle={onEventBus}
+          onCardClick={onCardClicked}
         />
       )}
     </div>

@@ -17,6 +17,13 @@ const FormCard = ({ colId, defaultValue, onSubmit, onClose }) => {
         onClose();
       }}
     >
+      <div className="modal-header">
+        <h5 className="modal-title">Update Card</h5>
+        <button type="button" className="btn" onClick={() => onClose()}>
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
       <div className="modal-body">
         <div className="mb-3">
           <label className="form-label">Card title</label>

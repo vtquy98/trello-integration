@@ -39,20 +39,18 @@ const Card = ({ onChange, id, title, description, onDelete, ...props }) => {
           autoFocus
         />
       ) : (
-        <>
-          <div className="text-wrap" onClick={() => setEditing(true)}>
-            {title}
-          </div>
+        <div onClick={props.onClick}>
+          <div className="text-wrap">{title}</div>
 
           {description && (
-            <>
+            <div>
               <hr className="mt-1 text-secondary" />
               <div className="text-wrap small text-secondary">
                 {description}
               </div>
-            </>
+            </div>
           )}
-        </>
+        </div>
       )}
       {deleteVisible && (
         <span
