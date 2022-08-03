@@ -1,6 +1,6 @@
 import React from "react";
 
-const Card = ({ onChange, id, title, description, onDelete, ...props }) => {
+const Card = ({ onChange, id, title, description, onDelete, cardStyle, ...props }) => {
   const [value, setValue] = React.useState(title);
   const [editing, setEditing] = React.useState(false);
   const [deleteVisible, setDeleteVisible] = React.useState(false);
@@ -19,7 +19,7 @@ const Card = ({ onChange, id, title, description, onDelete, ...props }) => {
   return (
     <div
       className="card p-2 mb-2 position-relative"
-      style={{ width: 260 }}
+      style={cardStyle}
       onMouseEnter={() => setDeleteVisible(true)}
       onMouseLeave={() => setDeleteVisible(false)}
     >

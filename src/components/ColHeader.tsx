@@ -24,11 +24,22 @@ const ColHeader = (props) => {
   };
 
   return (
-    <div className="d-flex justify-content-between">
+    <div className="d-flex justify-content-between align-items-center">
       <div className="fw-bold">{title}</div>
-      <div className="" onClick={() => setModal && setModal(<NewCardModal />)}>
-        Add
-      </div>
+      <span
+        className=" d-flex justify-content-center align-items-center"
+        style={{
+          padding: 4,
+          height: 16,
+          width: 16,
+          borderRadius: "50%",
+          background: "#fef3f2",
+          cursor: "pointer",
+        }}
+        onClick={() => setModal && setModal(<NewCardModal />)}
+      >
+        <i className="fa fa-plus" style={{ fontSize: 12, color: "#0d6eac" }} />
+      </span>
     </div>
   );
 };
