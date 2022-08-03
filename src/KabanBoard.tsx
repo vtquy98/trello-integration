@@ -31,17 +31,12 @@ const KabanBoard = () => {
           return {
             id: item.id,
             title: item.name,
-            style: { width: 360, backgroundColor: '#eef2f6' },
+            style: { minWidth: "25%", backgroundColor: "#eef2f6" },
             cards: item.cards.map((c) => ({
               id: c.id,
               title: c.name,
-              // label: '15 mins',
               cardStyle: {
                 width: 340,
-                maxWidth: 340,
-                margin: "auto",
-                marginBottom: 5,
-                
               },
               description: c.desc,
             })),
@@ -85,6 +80,9 @@ const KabanBoard = () => {
                   id: res.data.id,
                   title: res.data.name,
                   description: res.data.desc,
+                  cardStyle: {
+                    width: 340,
+                  },
                 };
               }
               return c;
@@ -130,6 +128,9 @@ const KabanBoard = () => {
             id: res.data.id,
             title: res.data.name,
             description: res.data.desc,
+            cardStyle: {
+              width: 340,
+            },
           });
         }
         return item;
@@ -228,7 +229,7 @@ const KabanBoard = () => {
     <div>
       {list && (
         <Board
-          style={{ backgroundColor: "#f8fafc", textAlign: "left" }}
+          style={{ backgroundColor: "white", textAlign: "left", minWidth: "100vw" }}
           data={{ lanes: list }}
           handleDragEnd={handleDragEnd}
           onCardMoveAcrossLanes={onCardMoveAcrossLanes}

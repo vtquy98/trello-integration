@@ -58,18 +58,13 @@ const Card = ({ onChange, id, title, description, onDelete, cardStyle, ...props 
           style={{
             top: 5,
             right: 8,
-            padding: 4,
-            height: 10,
-            width: 10,
-            borderRadius: "50%",
-            background: "#fef3f2",
             cursor: "pointer",
           }}
           onClick={() => onDelete()}
         >
           <i
             className="fa fa-trash"
-            style={{ fontSize: 8, color: "#f04438" }}
+            style={{ fontSize: 12, color: "#f04438" }}
           />
         </span>
       )}

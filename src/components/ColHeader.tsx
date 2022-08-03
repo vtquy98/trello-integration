@@ -29,16 +29,16 @@ const ColHeader = (props) => {
       <span
         className=" d-flex justify-content-center align-items-center"
         style={{
-          padding: 4,
-          height: 16,
-          width: 16,
+          padding: 8,
+          height: 20,
+          width: 20,
           borderRadius: "50%",
-          background: "#fef3f2",
+          background: "#0d6eac",
           cursor: "pointer",
         }}
         onClick={() => setModal && setModal(<NewCardModal />)}
       >
-        <i className="fa fa-plus" style={{ fontSize: 12, color: "#0d6eac" }} />
+        <i className="fa fa-plus" style={{ fontSize: 12, color: "white" }} />
       </span>
     </div>
   );
