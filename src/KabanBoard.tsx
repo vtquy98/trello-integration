@@ -31,7 +31,7 @@ const KabanBoard = () => {
           return {
             id: item.id,
             title: item.name,
-            style: { minWidth: "25%", backgroundColor: "#eef2f6" },
+            style: { minWidth: 360, backgroundColor: "#eef2f6" },
             cards: item.cards.map((c) => ({
               id: c.id,
               title: c.name,
@@ -51,47 +51,53 @@ const KabanBoard = () => {
     getList();
   }, []);
 
-  const updateCard = async (cardId: string, vars: Object) => {
+  const updateCard = async (
+    cardId: string,
+    vars: Object,
+    noReload?: boolean
+  ) => {
     try {
       const res = await axios.put(
         `${API}/cards/${cardId}?key=${API_KEY}&token=${API_TOKEN}`,
         vars
       );
 
-      //trigger event to update data returned from trello
-      eventBus.publish({
-        type: "UPDATE_CARD",
-        laneId: res.data.idList,
-        card: {
-          id: res.data.id,
-          title: res.data.name,
-          description: res.data.desc,
-        },
-      });
+      if (!noReload) {
+        //trigger event to update data returned from trello
+        eventBus.publish({
+          type: "UPDATE_CARD",
+          laneId: res.data.idList,
+          card: {
+            id: res.data.id,
+            title: res.data.name,
+            description: res.data.desc,
+          },
+        });
 
-      //update data in the state
-      const newList = list.map((item) => {
-        if (item.id === res.data.idList) {
-          return {
-            ...item,
-            cards: item.cards.map((c) => {
-              if (c.id === res.data.id) {
-                return {
-                  id: res.data.id,
-                  title: res.data.name,
-                  description: res.data.desc,
-                  cardStyle: {
-                    width: 340,
-                  },
-                };
-              }
-              return c;
-            }),
-          };
-        }
-        return item;
-      });
-      setList(newList);
+        //update data in the state
+        const newList = list.map((item) => {
+          if (item.id === res.data.idList) {
+            return {
+              ...item,
+              cards: item.cards.map((c) => {
+                if (c.id === res.data.id) {
+                  return {
+                    id: res.data.id,
+                    title: res.data.name,
+                    description: res.data.desc,
+                    cardStyle: {
+                      width: 340,
+                    },
+                  };
+                }
+                return c;
+              }),
+            };
+          }
+          return item;
+        });
+        setList(newList);
+      }
 
       return res.data;
     } catch (err) {
@@ -141,17 +147,18 @@ const KabanBoard = () => {
     }
   };
 
-  const handleDragEnd = (
-    cardId,
-    sourceLaneId,
-    targetLaneId,
-    position,
-    cardDetails
-  ) => {
-    updateCard(cardId, {
-      pos: position,
-    });
-  };
+  // const handleDragEnd = (
+  //   cardId,
+  //   sourceLaneId,
+  //   targetLaneId,
+  //   position,
+  //   cardDetails
+  // ) => {
+  //   //TODO: need to check later
+  //   updateCard(cardId, {
+  //     pos: position,
+  //   });
+  // };
 
   const onCardMoveAcrossLanes = (fromLaneId, toLaneId, cardId, index) => {
     if (fromLaneId !== toLaneId) {
@@ -171,9 +178,13 @@ const KabanBoard = () => {
       });
       setList(newList);
 
-      updateCard(cardId, {
-        idList: toLaneId,
-      });
+      updateCard(
+        cardId,
+        {
+          idList: toLaneId,
+        },
+        true
+      );
     }
   };
 
@@ -229,9 +240,13 @@ const KabanBoard = () => {
     <div>
       {list && (
         <Board
-          style={{ backgroundColor: "white", textAlign: "left", minWidth: "100vw" }}
+          style={{
+            backgroundColor: "white",
+            textAlign: "left",
+            minWidth: "100vw",
+          }}
           data={{ lanes: list }}
-          handleDragEnd={handleDragEnd}
+          // handleDragEnd={handleDragEnd}
           onCardMoveAcrossLanes={onCardMoveAcrossLanes}
           onCardUpdate={onCardUpdate}
           onCardDelete={onCardDelete}
